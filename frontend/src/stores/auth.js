@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', {
         return true;
       } catch (err) {
         if (!err.response) {
-          this.error = "Connexion impossible : le serveur backend (port 5000) ne répond pas. Avez-vous lancé 'npm start' dans le dossier backend ?";
+          this.error = "Impossible de joindre le serveur. Si le backend Render était en veille, son réveil prend environ 30 secondes. Veuillez réessayer dans quelques instants.";
         } else {
           this.error = err.response.data?.message || 'Erreur lors de la connexion';
         }
@@ -56,7 +56,7 @@ export const useAuthStore = defineStore('auth', {
         return true;
       } catch (err) {
         if (!err.response) {
-          this.error = "Connexion impossible : le serveur backend (port 5000) ne répond pas. Avez-vous lancé 'npm start' dans le dossier backend ?";
+          this.error = "Impossible de joindre le serveur. Si le backend Render était en veille, son réveil prend environ 30 secondes. Veuillez réessayer dans quelques instants.";
         } else {
           this.error = err.response.data?.message || "Erreur lors de l'inscription";
         }

@@ -17,11 +17,47 @@ connectDB();
 
 const app = express();
 
-// Middlewares globaux
+// Configuration CORS dynamique (compatible Vercel, Render, Localhost et CLIENT_URL)
+const allowedOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((url) => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
+  origin: (origin, callback) => {
+    // Requêtes directes ou sans header Origin (Postman, scripts, curl)
+    if (!origin) return callback(null, true);
+
+    // Autoriser localhost et 127.0.0.1
+    if (/^https?:\/\/localhost(:\d+)?$/.test(origin) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    // Autoriser automatiquement tous les déploiements Vercel (*.vercel.app)
+    if (origin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+
+    // Autoriser les domaines personnalisés définis dans CLIENT_URL
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Autoriser par défaut pour garantir l'accès à la boutique
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Middleware de protection contre le double préfixe /api/api
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/api/')) {
+    req.url = req.url.replace('/api/api/', '/api/');
+  }
+  next();
+});
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

@@ -136,8 +136,8 @@ onMounted(async () => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
         <div>
           <div class="text-2xl mb-2">🚚</div>
-          <h4 class="font-bold text-slate-900 mb-1">Livraison Gratuite dès 5 000 FCFA</h4>
-          <p class="text-sm text-slate-500">Expédition rapide sur Abidjan et expédition dans toute la Côte d'Ivoire.</p>
+          <h4 class="font-bold text-slate-900 mb-1">Livraison Rapide & Fiable</h4>
+          <p class="text-sm text-slate-500">Expédition rapide sur Abidjan et partout en Côte d'Ivoire (1 500 FCFA).</p>
         </div>
         <div>
           <div class="text-2xl mb-2">🏷️</div>
