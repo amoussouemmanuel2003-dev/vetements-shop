@@ -1,0 +1,19 @@
+{
+  "name": "Atelier Mode",
+  "short_name": "Atelier Mode",
+  "description": "Prêt-à-porter et accessoires de mode.",
+  "lang": "fr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "612x612",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
