@@ -12,7 +12,12 @@ const ensureOrderColumns = async () => {
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS items_price NUMERIC(10, 2) DEFAULT 0.00;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS shipping_price NUMERIC(10, 2) DEFAULT 0.00;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_fee NUMERIC(10, 2) DEFAULT 0.00;
-      ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_price NUMERIC(10, 2) DEFAULT 0.00;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
+      UPDATE orders
+         SET total_price = CASE WHEN total_price = 0 AND total_amount <> 0 THEN total_amount ELSE total_price END,
+             total_amount = CASE WHEN total_amount = 0 AND total_price <> 0 THEN total_price ELSE total_amount END
+       WHERE total_price = 0 OR total_amount = 0;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT false;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP WITH TIME ZONE;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_status VARCHAR(50) DEFAULT 'En attente';
@@ -38,7 +43,7 @@ export const formatOrder = (o) => {
     itemsPrice: Number(o.items_price),
     shippingPrice: Number(o.shipping_price),
     commissionFee: Number(o.commission_fee || 0),
-    totalPrice: Number(o.total_price),
+    totalPrice: Number(o.total_price || o.total_amount || 0),
     isPaid: Boolean(o.is_paid),
     paidAt: o.paid_at,
     orderStatus: o.order_status,
@@ -61,8 +66,8 @@ export const createOrder = async ({
   await ensureOrderColumns();
   const result = await pool.query(
     `INSERT INTO orders 
-      (user_id, order_items, shipping_address, payment_method, items_price, shipping_price, commission_fee, total_price)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      (user_id, order_items, shipping_address, payment_method, items_price, shipping_price, commission_fee, total_price, total_amount)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
     [
       userId,
@@ -72,6 +77,7 @@ export const createOrder = async ({
       itemsPrice,
       shippingPrice,
       commissionFee,
+      totalPrice,
       totalPrice
     ]
   );

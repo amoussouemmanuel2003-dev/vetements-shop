@@ -56,6 +56,7 @@ const initializeTables = async (client) => {
       items_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
       shipping_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
       total_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
+      total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00,
       is_paid BOOLEAN DEFAULT false,
       paid_at TIMESTAMP WITH TIME ZONE,
       order_status VARCHAR(50) DEFAULT 'En attente',
@@ -78,6 +79,12 @@ const initializeTables = async (client) => {
     ALTER TABLE products ADD COLUMN IF NOT EXISTS rating NUMERIC(2, 1) DEFAULT 5.0;
 
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS commission_fee NUMERIC(10, 2) DEFAULT 0.00;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_price NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
+    ALTER TABLE orders ADD COLUMN IF NOT EXISTS total_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00;
+    UPDATE orders
+       SET total_price = CASE WHEN total_price = 0 AND total_amount <> 0 THEN total_amount ELSE total_price END,
+           total_amount = CASE WHEN total_amount = 0 AND total_price <> 0 THEN total_price ELSE total_amount END
+     WHERE total_price = 0 OR total_amount = 0;
 
     -- 3. Application du Prix Unique : TOUS les articles sont fixés à 2 000 FCFA
     UPDATE products SET price = 2000;
