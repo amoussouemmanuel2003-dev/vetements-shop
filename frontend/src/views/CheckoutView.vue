@@ -30,11 +30,11 @@ const orderSuccess = ref(null);
 
 const paymentOptions = [
   {
-    id: 'Dépôt Mobile Money (Wave, Orange, MTN, Moov)',
-    name: 'Dépôt Mobile Money (Wave / OM / MoMo / Moov)',
-    logo: '📱',
-    hint: 'Le gérant vous transmettra le numéro de dépôt directement sur WhatsApp'
-  },
+  id: 'GeniusPay',
+  name: 'Payer en ligne avec GeniusPay',
+  logo: '💳',
+  hint: 'Choisis Wave, Orange Money, MTN, Moov ou carte'
+},
   {
     id: 'Espèces à la livraison',
     name: 'Paiement Cash à la Livraison',
@@ -116,6 +116,19 @@ const handleCheckout = async () => {
         totalPrice: cart.totalPrice
       };
     }
+    if (paymentPreference.value === 'GeniusPay') {
+  const { data: payment } = await axios.post(
+    '/api/payments/geniuspay/initiate',
+    { orderId: order.id }
+  );
+
+  if (!payment.checkoutUrl) {
+    throw new Error('Le lien de paiement GeniusPay est manquant.');
+  }
+
+  window.location.assign(payment.checkoutUrl);
+  return;
+}
 
     // 2. Préparation de l'URL WhatsApp avec tous les détails
     const whatsappUrl = getWhatsAppUrl(order);
