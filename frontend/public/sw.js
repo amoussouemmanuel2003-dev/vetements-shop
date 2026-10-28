@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atelier-mode-v1';
+const CACHE_NAME = 'atelier-mode-v2';
 const APP_SHELL = ['/', '/manifest.json', '/logo.png'];
 
 self.addEventListener('install', (event) => {
@@ -17,5 +17,15 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
+
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/'))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(event.request).then((cached) => cached || fetch(event.request))
+  );
 });
