@@ -34,24 +34,21 @@ export const initiateGeniusPayPayment = async (req, res, next) => {
 
     const apiKey = process.env.GENIUSPAY_API_KEY;
     const apiSecret = process.env.GENIUSPAY_API_SECRET;
-    const apiUrl = process.env.GENIUSPAY_API_URL || 'https://pay.genius.ci/api/v1/merchant';
+    const apiUrl = process.env.GENIUSPAY_API_URL || 'https://geniuspay.ci/api/v1/merchant';
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
-    // Mode simulation / sandbox automatique si les clés réelles ne sont pas encore configurées dans .env
-    const isPlaceholder = !apiKey || !apiSecret || apiKey.includes('votre_cle_ici') || apiKey.includes('placeholder');
+    // En sandbox, l'API GeniusPay demande les deux clés côté serveur.
+    const hasPlaceholderKey =
+      apiKey?.includes('votre_cle_ici') ||
+      apiSecret?.includes('votre_cle_ici') ||
+      apiKey?.includes('placeholder') ||
+      apiSecret?.includes('placeholder');
 
-    if (isPlaceholder) {
-      console.log(`[GeniusPay Simulator] Clés non configurées dans .env. Démarrage de la simulation pour la commande #${order.id}.`);
-      const simRef = `GENIUS-SIM-${Date.now()}`;
-      return res.json({
-        success: true,
-        isSimulation: true,
-        reference: simRef,
-        checkoutUrl: `${clientUrl}/checkout?status=success&order_id=${order.id}&reference=${simRef}&sim=1`,
-        message: 'Mode simulation actif. Renseignez vos clés GENIUSPAY_API_KEY et GENIUSPAY_API_SECRET dans backend/.env pour les paiements réels.'
+    if (!apiKey || !apiSecret || hasPlaceholderKey) {
+      return res.status(503).json({
+        message: 'Paiement GeniusPay indisponible : configure GENIUSPAY_API_KEY (pk_sandbox_...) et GENIUSPAY_API_SECRET (sk_sandbox_...) dans les variables Render du backend.'
       });
     }
-
     // Appel direct à l'API GeniusPay Côte d'Ivoire
     const response = await fetch(`${apiUrl}/payments`, {
       method: 'POST',
@@ -134,7 +131,7 @@ export const verifyGeniusPayPayment = async (req, res, next) => {
 
     const apiKey = process.env.GENIUSPAY_API_KEY;
     const apiSecret = process.env.GENIUSPAY_API_SECRET;
-    const apiUrl = process.env.GENIUSPAY_API_URL || 'https://pay.genius.ci/api/v1/merchant';
+    const apiUrl = process.env.GENIUSPAY_API_URL || 'https://geniuspay.ci/api/v1/merchant';
 
     const response = await fetch(`${apiUrl}/payments/${reference}`, {
       method: 'GET',
